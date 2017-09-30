@@ -22,6 +22,7 @@ if (file_exists($dir.$licenseFile)) {
     foreach ($allFiles as $file) {
         if (substr($file,0,1) !== '.') {
             $extension = pathinfo($dir.$file, PATHINFO_EXTENSION);
+            $extension = strtolower($extension);
             if ($extension === 'txt' || $extension === 'jpg' || $extension === 'jpeg' || $extension === 'png') {
                 $json['files'][] = $file;
             }
