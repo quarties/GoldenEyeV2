@@ -3,31 +3,40 @@
 header('Content-type: application/json');
 
 $dir = '/Volumes/USB DISK/';
-$licenseFile = 'license.txt';
 
-if (file_exists($dir.$licenseFile)) {
+if (file_exists($dir)) {
 
-    $license = file_get_contents($dir.$licenseFile);
+    $licenseFile = 'license.txt';
 
-    $json = array(
-        'license' => $license
-    );
+    if (file_exists($dir.$licenseFile)) {
 
-} else {
-    $allFiles = scandir($dir);
-    $json = array(
-        'license' => 'files',
-        'files' => ''
-    );
-    foreach ($allFiles as $file) {
-        if (substr($file,0,1) !== '.') {
-            $extension = pathinfo($dir.$file, PATHINFO_EXTENSION);
-            $extension = strtolower($extension);
-            if ($extension === 'txt' || $extension === 'jpg' || $extension === 'jpeg' || $extension === 'png') {
-                $json['files'][] = $file;
+        $license = file_get_contents($dir.$licenseFile);
+
+        $json = array(
+            'license' => $license
+        );
+
+    } else {
+        $allFiles = scandir($dir);
+        $json = array(
+            'license' => 'files',
+            'files' => ''
+        );
+        foreach ($allFiles as $file) {
+            if (substr($file,0,1) !== '.') {
+                $extension = pathinfo($dir.$file, PATHINFO_EXTENSION);
+                $extension = strtolower($extension);
+                if ($extension === 'txt' || $extension === 'jpg' || $extension === 'jpeg' || $extension === 'png') {
+                    $json['files'][] = $file;
+                }
             }
         }
     }
+
+} else {
+    $json = array(
+        'license' => '404'
+    );
 }
 
 echo json_encode($json);

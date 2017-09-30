@@ -35,6 +35,9 @@ $(document).ready(function() {
                             break;
                     }
                     break;
+                case 'files':
+                    window.location.href = 'index.html';
+                    break;
             }
         },
         getFileContent: function (fileName, callback) {
@@ -68,17 +71,22 @@ $(document).ready(function() {
 
             $(document).keyup(function (e) {
 
-                $('.fileContent').hide();
+                if(e.keyCode > 47 && e.keyCode < 58) {
 
-                var key;
+                    $('.fileContent').hide();
 
-                if (e.key > 0 && e.key < 10)
-                    key = e.key - 1;
-                else if (e.key === 0)
-                    key = 9;
-                else key = null;
+                    var key;
 
-                GoldenEye.openFile(GoldenEye.files[key]);
+                    if (e.key > 0 && e.key < 10)
+                        key = e.key - 1;
+                    else if (e.key === 0)
+                        key = 9;
+                    else key = null;
+
+                    GoldenEye.openFile(GoldenEye.files[key]);
+                } else if (e.keyCode === 27) {
+                    GoldenEye.router(GoldenEye.currentPage);
+                }
 
             });
         },
