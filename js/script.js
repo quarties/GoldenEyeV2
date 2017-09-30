@@ -3,6 +3,15 @@ $(document).ready(function() {
         currentPage: null,
         licenseType: null,
         files: null,
+        passwords: [
+            'ge1',
+            'ge2',
+            'ge3',
+            'ge4',
+            'ge5',
+            'ge6',
+            'ge7'
+        ],
         author: "Kurtz Korinokabe Software Combinat",
         version: "v. 2-QRT-20-18-DEV",
         getCurrentFileName: function (){
@@ -33,12 +42,22 @@ $(document).ready(function() {
                         case 'normal':
                             window.location.href = 'normal.html';
                             break;
+                        default:
+                            window.location.href = '404.html';
+                            break;
                     }
                     break;
                 case 'files':
+                case '404':
                     window.location.href = 'index.html';
                     break;
             }
+        },
+        pageIndex: function () {
+            $(document).keyup(function (e) {
+                if (e.keyCode === 13)
+                    window.GoldenEye.router(GoldenEye.currentPage);
+            });
         },
         getFileContent: function (fileName, callback) {
             $.ajax({
@@ -61,7 +80,7 @@ $(document).ready(function() {
                 $('.fileContent').show();
             });
         },
-        filesPage: function () {
+        pageFiles: function () {
 
             $('.fileContent').hide();
 
@@ -90,6 +109,49 @@ $(document).ready(function() {
 
             });
         },
+        programCheck: function (programName) {
+            programName = programName.toLowerCase();
+            programName = programName.replace(/\s/g,'');
+            if (programName === 'goldeneye' || programName === 'złoteoko' || programName === 'zloteoko') {
+                $('input').toggleClass('program').toggleClass('password').val('');
+                $('span').html('password');
+            }
+        },
+        connect: function (satNumber) {
+            $('.programPassword').hide();
+
+            $('.satNumber').html(satNumber);
+
+            var countDownFinal = new Date();
+            countDownFinal.setSeconds(countDownFinal.getSeconds() + 3599);
+
+            $('.countdownTimer').countdown(countDownFinal, function(event) {
+                $(this).html(event.strftime('%M:%S'));
+            });
+
+            $('.countdown').show();
+        },
+        passwordCheck: function (password) {
+            var satNumber = this.passwords.indexOf(password)+1;
+            if (satNumber > -1) {
+                this.connect(satNumber);
+            }
+        },
+        page404: function () {
+            $('.countdown').hide();
+            var input = $('input');
+            input.toggleClass('program');
+            $(document).keyup(function (e) {
+                if (e.keyCode === 13) {
+                    if (input.hasClass('program'))
+                        window.GoldenEye.programCheck($('.program').val());
+                    else if ($('input').hasClass('password'))
+                    window.GoldenEye.passwordCheck($('.password').val());
+                } else if (e.keyCode === 27) {
+                    GoldenEye.router(GoldenEye.currentPage);
+                }
+            });
+        },
         init: function () {
             this.getLicense(function (data) {
 
@@ -101,14 +163,15 @@ $(document).ready(function() {
 
                 switch (this.currentPage) {
                     case 'files':
-                        this.filesPage();
+                        this.pageFiles();
+                        break;
+                    case '404':
+                        this.page404();
+                        break;
+                    default:
+                        this.pageIndex();
                         break;
                 }
-
-                $(document).keyup(function (e) {
-                    if (e.keyCode === 13)
-                        window.GoldenEye.router(GoldenEye.currentPage);
-                });
             });
         }
     };
