@@ -184,18 +184,9 @@ label:focus, label:hover {
     outline: none;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
+.files {
+    text-align: left;
+}
 
 /* ==========================================================================
    Media Queries
