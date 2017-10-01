@@ -110,14 +110,17 @@ body {
 }
 
 .center{
-    max-width: 60%;
-    position: absolute;
+    width: 50%;
     margin-top: -0.66em;
     margin-left: -0.66em;
     padding: 0.66em;
     border: 5px solid #00cc00;
     display: block; 
     text-align: center;
+    position: absolute;
+    top:50%;
+    left:50%;
+    transform: translate(-50%,-50%);
 }
 
 .center .inner {
@@ -193,9 +196,23 @@ label:focus, label:hover {
 }
 
 .satStatus {
+    position: absolute;
     font-size: .5em;
     line-height: .5em;
     padding: 0 .75em;
+}
+
+.center h3 {
+    line-height: 1;
+}
+
+.center p {
+    line-height: .75;
+}
+
+u {
+    text-decoration: underline;
+    font-weight: bold;
 }
 
 /* ==========================================================================
@@ -323,11 +340,4 @@ label:focus, label:hover {
     h3 {
         page-break-after: avoid;
     }
-}
-
-.center {
-    position: absolute;
-    top:50%;
-    left:50%;
-    transform: translate(-50%,-50%);
 }
