@@ -28,29 +28,41 @@ $(document).ready(function() {
                 success: callback
             });
         },
-        router: function (currentPage) {
-            switch (currentPage) {
-                case 'index':
-                case '':
-                    switch (this.licenseType) {
-                        case 'files':
-                            window.location.href = 'files.html';
-                            break;
-                        case 'bond':
-                            window.location.href = 'bond.html';
-                            break;
-                        case 'normal':
-                            window.location.href = 'normal.html';
-                            break;
-                        default:
-                            window.location.href = '404.html';
-                            break;
-                    }
-                    break;
-                case 'files':
-                case '404':
-                    window.location.href = 'index.html';
-                    break;
+        router: function (currentPage, success, satNumber) {
+
+            success = success || false;
+            satNumber = satNumber || null;
+
+            if (success===true) {
+                switch (currentPage) {
+                    case '404':
+                        window.location.href = 'single-sat.html?satNumber='+satNumber;
+                        break;
+                }
+            } else {
+                switch (currentPage) {
+                    case 'index':
+                    case '':
+                        switch (this.licenseType) {
+                            case 'files':
+                                window.location.href = 'files.html';
+                                break;
+                            case 'bond':
+                                window.location.href = 'bond.html';
+                                break;
+                            case 'normal':
+                                window.location.href = 'normal.html';
+                                break;
+                            default:
+                                window.location.href = '404.html';
+                                break;
+                        }
+                        break;
+                    case 'files':
+                    case '404':
+                        window.location.href = 'index.html';
+                        break;
+                }
             }
         },
         pageIndex: function () {
@@ -123,17 +135,21 @@ $(document).ready(function() {
             $('.satNumber').html(satNumber);
 
             var countDownFinal = new Date();
-            countDownFinal.setSeconds(countDownFinal.getSeconds() + 3599);
+            //countDownFinal.setHours(countDownFinal.getHours() + 1);
+            countDownFinal.setSeconds(countDownFinal.getSeconds() + 5);
 
             $('.countdownTimer').countdown(countDownFinal, function(event) {
-                $(this).html(event.strftime('%M:%S'));
+                var totalMinutes = event.offset.hours * 60 + event.offset.minutes;
+                $(this).html(event.strftime(totalMinutes + ':%S'));
+            }).on('finish.countdown', function () {
+                GoldenEye.router(GoldenEye.currentPage, true, satNumber);
             });
 
             $('.countdown').show();
         },
         passwordCheck: function (password) {
             var satNumber = this.passwords.indexOf(password)+1;
-            if (satNumber > -1) {
+            if (satNumber > 0) {
                 this.connect(satNumber);
             }
         },
@@ -146,14 +162,33 @@ $(document).ready(function() {
                     if (input.hasClass('program'))
                         window.GoldenEye.programCheck($('.program').val());
                     else if ($('input').hasClass('password'))
-                    window.GoldenEye.passwordCheck($('.password').val());
+                        window.GoldenEye.passwordCheck($('.password').val());
                 } else if (e.keyCode === 27) {
                     GoldenEye.router(GoldenEye.currentPage);
                 }
             });
         },
         init: function () {
+
             this.getLicense(function (data) {
+
+                var $_GET = {};
+                if(document.location.toString().indexOf('?') !== -1) {
+                    var query = document.location
+                        .toString()
+                        // get the query string
+                        .replace(/^.*?\?/, '')
+                        // and remove any existing hash string (thanks, @vrijdenker)
+                        .replace(/#.*$/, '')
+                        .split('&');
+
+                    for(var i=0, l=query.length; i<l; i++) {
+                        var aux = decodeURIComponent(query[i]).split('=');
+                        $_GET[aux[0]] = aux[1];
+                    }
+                }
+
+                console.log($_GET);
 
                 $("body").append("<div class=\"version\"><p>"+this.author+"</p><p>"+this.version+"</p>");
 
