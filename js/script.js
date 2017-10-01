@@ -87,9 +87,7 @@ $(document).ready(function() {
             this.getFileContent(fileName, function (data) {
                 fileContent = data;
 
-                $('.fileContent').html(fileName+'<br>'+fileContent);
-
-                $('.fileContent').show();
+                $('.fileContent').html(fileName+'<br>'+fileContent).show();
             });
         },
         pageFiles: function () {
@@ -168,6 +166,107 @@ $(document).ready(function() {
                 }
             });
         },
+        satStatus: function (callback) {
+            $.getJSON("satStatus.json", callback);
+        },
+        getSatProgress: function (satNumber, callback) {
+            this.satStatus(function (json) {
+                satNumber -= 1;
+                var start = json[satNumber]['time']['start'];
+                var end = json[satNumber]['time']['end'];
+                var now = parseInt(new Date().getTime() / 1000);
+                var progress = Math.round((now-start)/(end-start)*100);
+                callback(progress);
+            })
+        },
+        getSatStatus: function (satNumber, callback) {
+            this.satStatus(function (json) {
+                satNumber -= 1;
+                var satStatus = {
+                    "status": json[satNumber]['status'],
+                    "progress": ""
+                };
+                var start = json[satNumber]['time']['start'];
+                var end = json[satNumber]['time']['end'];
+                if (start && end) {
+                    var now = parseInt(new Date().getTime() / 1000);
+                    var progress = Math.round((now-start)/(end-start)*100);
+                    satStatus.progress = ' '+progress+'%';
+                }
+                callback(satStatus);
+            });
+        },
+        showSatStatus: function () {
+            $("body").append('<div class="satStatus"></div>');
+
+            var satNumber;
+            var satStatusElement = $(".satStatus");
+
+            this.satStatus(function (json) {
+                satStatusElement.html('');
+                for (var i in json) {
+                    satNumber = parseInt(i)+1;
+                    var satStatus = {
+                        "status": json[i]['status'],
+                        "progress": ""
+                    };
+                    var start = json[i]['time']['start'];
+                    var end = json[i]['time']['end'];
+                    if (start && end) {
+                        var now = parseInt(new Date().getTime() / 1000);
+                        var progress = Math.round((now-start)/(end-start)*100);
+                        satStatus.progress = ' '+progress+'%';
+                    }
+                    satStatusElement.append('<p>Sat #'+satNumber+': '+satStatus['status']+satStatus['progress']+'</p>');
+                }
+            });
+
+            setInterval(function() {
+                GoldenEye.satStatus(function (json) {
+                    satStatusElement.html('');
+                    for (var i in json) {
+                        satNumber = parseInt(i) + 1;
+                        var satStatus = {
+                            "status": json[i]['status'],
+                            "progress": ""
+                        };
+                        var start = json[i]['time']['start'];
+                        var end = json[i]['time']['end'];
+                        if (start && end) {
+                            var now = parseInt(new Date().getTime() / 1000);
+                            var progress = Math.round((now - start) / (end - start) * 100);
+                            satStatus.progress = ' ' + progress + '%';
+                        }
+                        satStatusElement.append('<p>Sat #' + satNumber + ': ' + satStatus['status'] + satStatus['progress'] + '</p>');
+                    }
+                });
+            }, 1000);
+        },
+        satPage: function (satNumber, single) {
+            single = single || true;
+
+            this.showSatStatus();
+
+            if (single === true) {
+                $('.satNumber').html(satNumber);
+                this.getSatStatus(satNumber, function (data) {
+                    var satFunction = $('.satFunction');
+                    if (data.progress)
+                        satFunction.html(data.status + data.progress);
+                    else
+                        satFunction.html(data.status);
+                });
+                setInterval(function() {
+                    GoldenEye.getSatStatus(satNumber, function (data) {
+                        var satFunction = $('.satFunction');
+                        if (data.progress)
+                            satFunction.html(data.status + data.progress);
+                        else
+                            satFunction.html(data.status);
+                    });
+                }, 1000);
+            }
+        },
         init: function () {
 
             this.getLicense(function (data) {
@@ -176,9 +275,7 @@ $(document).ready(function() {
                 if(document.location.toString().indexOf('?') !== -1) {
                     var query = document.location
                         .toString()
-                        // get the query string
                         .replace(/^.*?\?/, '')
-                        // and remove any existing hash string (thanks, @vrijdenker)
                         .replace(/#.*$/, '')
                         .split('&');
 
@@ -187,8 +284,6 @@ $(document).ready(function() {
                         $_GET[aux[0]] = aux[1];
                     }
                 }
-
-                console.log($_GET);
 
                 $("body").append("<div class=\"version\"><p>"+this.author+"</p><p>"+this.version+"</p>");
 
@@ -202,6 +297,12 @@ $(document).ready(function() {
                         break;
                     case '404':
                         this.page404();
+                        break;
+                    case 'single-sat':
+                        this.satPage($_GET['satNumber']);
+                        break;
+                    case 'multiple-sat':
+                        this.satPage(0, false);
                         break;
                     default:
                         this.pageIndex();
