@@ -313,13 +313,16 @@ $(document).ready(function() {
             $('.satFunctions').hide();
             GoldenEye.currentFunction = func;
             switch (func) {
-                case 'self-destruction':
-                    GoldenEye.updateSatStatusTime(satNumber, GoldenEye.currentFunction, false);
-                    break;
                 case 'spy':
                 case 'energy':
                     GoldenEye.updateSatStatusLocation(satNumber, GoldenEye.currentFunction, location);
                     break;
+                case 'self-destruction':
+                    GoldenEye.updateSatStatusTime(satNumber, GoldenEye.currentFunction, false);
+                    break;
+                /*case 'landing':
+                    GoldenEye.updateSatStatusTime(satNumber, GoldenEye.currentFunction);
+                    break;*/
                 default:
                     GoldenEye.updateSatStatus(satNumber, GoldenEye.currentFunction);
                     break;

@@ -110,7 +110,7 @@ body {
 }
 
 .center{
-    width: 50%;
+    width: 60%;
     margin-top: -0.66em;
     margin-left: -0.66em;
     padding: 0.66em;
@@ -174,9 +174,9 @@ label:focus, label:hover {
     text-transform: none;
     position: absolute;
     top: 0;
-    right: 5px;
+    right: 8px;
     text-align: right;
-    font-size: 10px;
+    font-size: .35em;
     line-height: 2px;
 }
 
@@ -197,9 +197,10 @@ label:focus, label:hover {
 
 .satStatus {
     position: absolute;
-    font-size: .5em;
+    font-size: .35em;
     line-height: .5em;
-    padding: 0 .75em;
+    top: 3px;
+    left: 8px;
 }
 
 .center h3 {
