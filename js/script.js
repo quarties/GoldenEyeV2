@@ -196,6 +196,23 @@ $(document).ready(function() {
                 callback(satStatus);
             });
         },
+        updateSatStatus: function (satNumber) {
+            satNumber -= 1;
+            this.satStatus(function (json) {
+                json[satNumber]['status'] = 'destroyed';
+                json[satNumber]['time']['start'] = json[satNumber]['time']['end'] = '';
+                console.log(json[satNumber]);
+                $.ajax({
+                    context: this,
+                    type: "POST",
+                    data: {json:json},
+                    url: "updateSatStatus.php",
+                    success: function (data) {
+                        console.log(data);
+                    }
+                })
+            });
+        },
         showSatStatus: function () {
             $("body").append('<div class="satStatus"></div>');
 
@@ -215,7 +232,10 @@ $(document).ready(function() {
                     if (start && end) {
                         var now = parseInt(new Date().getTime() / 1000);
                         var progress = Math.round((now-start)/(end-start)*100);
-                        satStatus.progress = ' '+progress+'%';
+                        if (now >= end) {
+                            GoldenEye.updateSatStatus(satNumber);
+                        } else
+                            satStatus.progress = ' '+progress+'%';
                     }
                     satStatusElement.append('<p>Sat #'+satNumber+': '+satStatus['status']+satStatus['progress']+'</p>');
                 }
@@ -235,7 +255,10 @@ $(document).ready(function() {
                         if (start && end) {
                             var now = parseInt(new Date().getTime() / 1000);
                             var progress = Math.round((now - start) / (end - start) * 100);
-                            satStatus.progress = ' ' + progress + '%';
+                            if (now >= end) {
+                                GoldenEye.updateSatStatus(satNumber);
+                            } else
+                                satStatus.progress = ' '+progress+'%';
                         }
                         satStatusElement.append('<p>Sat #' + satNumber + ': ' + satStatus['status'] + satStatus['progress'] + '</p>');
                     }
