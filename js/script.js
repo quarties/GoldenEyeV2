@@ -550,8 +550,9 @@ $(document).ready(function() {
                                 if (data < 5) {
                                     funcCheck = 's/unity';
                                     GoldenEye.checkCondition(funcCheck, function (data) {
-                                        console.log(funcCheck+': '+data);
-                                        GoldenEye.getIndexCountdownTime(funcCheck);
+                                        if (data >= 5) {
+                                            GoldenEye.getIndexCountdownTime(funcCheck);
+                                        }
                                     });
                                 } else {
                                     GoldenEye.getIndexCountdownTime(funcCheck);
