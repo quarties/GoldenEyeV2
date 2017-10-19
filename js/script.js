@@ -70,12 +70,6 @@ $(document).ready(function() {
                 }
             }
         },
-        pageIndex: function () {
-            $(document).keyup(function (e) {
-                if (e.keyCode === 13)
-                    window.GoldenEye.router(GoldenEye.currentPage);
-            });
-        },
         getFileContent: function (fileName, callback) {
             $.ajax({
                 context: this,
@@ -138,10 +132,10 @@ $(document).ready(function() {
             $('.satNumber').html(satNumber);
 
             var countDownFinal = new Date();
-            if (!GoldenEye.debug) {
-                countDownFinal.setHours(countDownFinal.getHours() + 1);
-            } else {
+            if (GoldenEye.debug) {
                 countDownFinal.setSeconds(countDownFinal.getSeconds() + 5);
+            } else {
+                countDownFinal.setHours(countDownFinal.getHours() + 1);
             }
 
             $('.countdownTimer').countdown(countDownFinal, function(event) {
@@ -251,10 +245,10 @@ $(document).ready(function() {
                     end;
                 data[satNumber]['start'] = nowStamp;
                 if (tillEnd) {
-                    if (!GoldenEye.debug) {
-                        end = new Math.round(Date(2017, 10, 29).getTime() / 1000);
+                    if (GoldenEye.debug) {
+                        end = Math.round(new Date(2017, 9, 21).getTime() / 1000);
                     } else {
-                        end = Math.round(new Date(2017, 9, 16).getTime() / 1000);
+                        end = new Math.round(Date(2017, 10, 29).getTime() / 1000);
                     }
                     var iteration = 0;
                     data[satNumber]['end'] = end;
@@ -263,7 +257,7 @@ $(document).ready(function() {
                     $.each(data, function (index) {
                         iteration++;
                         if (data[index]['status'] === status) {
-                            data[index]['start'] = now;
+                            data[index]['start'] = nowStamp;
                             data[index]['end'] = end;
                             data[index]['location'] = location;
                         }
@@ -277,10 +271,10 @@ $(document).ready(function() {
                         }
                     });
                 } else {
-                    if (debug) {
-                        end = Math.round(now.setHours(now.getHours() + 5) / 1000);
-                    } else {
+                    if (GoldenEye.debug) {
                         end = Math.round(now.setMinutes(now.getMinutes() + 5) / 1000);
+                    } else {
+                        end = Math.round(now.setHours(now.getHours() + 5) / 1000);
                     }
                     data[satNumber]['end'] = end;
                 }
@@ -491,8 +485,12 @@ $(document).ready(function() {
                             }
                         } else {
                             if (e.keyCode === 27) {
-                                GoldenEye.clearSatFunction(satNumber);
-                                $('input').show();
+                                if (GoldenEye.debug) {
+                                    GoldenEye.clearSatFunction(satNumber);
+                                    $('input').show();
+                                } else {
+                                    window.location.href = 'index.html';
+                                }
                             }
                         }
 
@@ -519,6 +517,59 @@ $(document).ready(function() {
             }
 
 
+        },
+        showIndexCountdown: function (func, end) {
+            $('.func').html(func);
+            end = new Date(end*1000);
+            $('.countdownTimer').countdown(end, function(event) {
+                var totalHours = event.offset.days * 24 + event.offset.hours;
+                $(this).html(event.strftime(totalHours + ':%M:%S'));
+            });
+            $('.countdown').show();
+        },
+        getIndexCountdownTime: function (func) {
+            GoldenEye.satStatus(function (data) {
+                if (data[0]['status'] === func) {
+                    GoldenEye.showIndexCountdown(func, data[0]['end']);
+                } else if (data[1]['status'] === func) {
+                    GoldenEye.showIndexCountdown(func, data[1]['end']);
+                } else if (data[2]['status'] === func) {
+                    GoldenEye.showIndexCountdown(func, data[2]['end']);
+                }
+            });
+        },
+        pageIndex: function () {
+            var funcCheck = 'laser';
+            GoldenEye.checkCondition(funcCheck, function (data) {
+                if (data < 5) {
+                    funcCheck = 'orbit';
+                    GoldenEye.checkCondition(funcCheck, function (data) {
+                        if (data < 5) {
+                            funcCheck = 'skyweb';
+                            GoldenEye.checkCondition(funcCheck, function (data) {
+                                if (data < 5) {
+                                    funcCheck = 's/unity';
+                                    GoldenEye.checkCondition(funcCheck, function (data) {
+                                        console.log(funcCheck+': '+data);
+                                        GoldenEye.getIndexCountdownTime(funcCheck);
+                                    });
+                                } else {
+                                    GoldenEye.getIndexCountdownTime(funcCheck);
+                                }
+                            });
+                        } else {
+                            GoldenEye.getIndexCountdownTime(funcCheck);
+                        }
+                    });
+                } else {
+                    GoldenEye.getIndexCountdownTime(funcCheck);
+                }
+            });
+
+            $(document).keyup(function (e) {
+                if (e.keyCode === 13)
+                    window.GoldenEye.router(GoldenEye.currentPage);
+            });
         },
         init: function () {
 
