@@ -1,5 +1,6 @@
 $(document).ready(function() {
     window.GoldenEye = {
+        debug: true,
         currentPage: null,
         currentFunction: null,
         licenseType: null,
@@ -137,9 +138,11 @@ $(document).ready(function() {
             $('.satNumber').html(satNumber);
 
             var countDownFinal = new Date();
-            //countDownFinal.setHours(countDownFinal.getHours() + 1);
-            // debug:
-            countDownFinal.setSeconds(countDownFinal.getSeconds() + 5);
+            if (!GoldenEye.debug) {
+                countDownFinal.setHours(countDownFinal.getHours() + 1);
+            } else {
+                countDownFinal.setSeconds(countDownFinal.getSeconds() + 5);
+            }
 
             $('.countdownTimer').countdown(countDownFinal, function(event) {
                 var totalMinutes = event.offset.hours * 60 + event.offset.minutes;
@@ -248,10 +251,12 @@ $(document).ready(function() {
                     end;
                 data[satNumber]['start'] = nowStamp;
                 if (tillEnd) {
-                    //var end = new Math.round(Date(2017, 10, 29).getTime() / 1000);
-                    // debug:
-                    end = Math.round(new Date(2017, 9, 16).getTime() / 1000),
-                        iteration = 0;
+                    if (!GoldenEye.debug) {
+                        end = new Math.round(Date(2017, 10, 29).getTime() / 1000);
+                    } else {
+                        end = Math.round(new Date(2017, 9, 16).getTime() / 1000);
+                    }
+                    var iteration = 0;
                     data[satNumber]['end'] = end;
                     data[satNumber]['location'] = location;
                     callbackSend = true;
@@ -272,9 +277,11 @@ $(document).ready(function() {
                         }
                     });
                 } else {
-                    // end = Math.round(now.setHours(now.getHours() + 5) / 1000);
-                    // debug:
-                    end = Math.round(now.setMinutes(now.getMinutes() + 5) / 1000);
+                    if (debug) {
+                        end = Math.round(now.setHours(now.getHours() + 5) / 1000);
+                    } else {
+                        end = Math.round(now.setMinutes(now.getMinutes() + 5) / 1000);
+                    }
                     data[satNumber]['end'] = end;
                 }
 
