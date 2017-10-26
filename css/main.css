@@ -109,6 +109,8 @@ body {
     overflow: hidden;
 }
 
+img {max-width: 100%;}
+
 .center{
     width: 60%;
     margin-top: -0.66em;
@@ -188,6 +190,7 @@ label:focus, label:hover {
 }
 
 .files {
+    margin: 0 0 0 20px;
     text-align: left;
 }
 
@@ -214,6 +217,19 @@ label:focus, label:hover {
 u {
     text-decoration: underline;
     font-weight: bold;
+}
+
+body.filePage {
+    overflow: visible;
+}
+
+
+body.filePage .center {
+    position: absolute;
+    top: 15%;
+    left: 50%;
+    transform: translate(-50%, 0%);
+    margin-bottom: 10%;
 }
 
 /* ==========================================================================

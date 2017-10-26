@@ -1,11 +1,13 @@
 $(document).ready(function() {
     window.GoldenEye = {
-        debug: false,
+        debug: true,
         currentPage: null,
         currentFunction: null,
         licenseType: null,
         minCondition: 4,
+        minCancel: 3,
         files: null,
+        filePag: 0,
         refreshTime: 500,
         passwords: [
             'ge1',
@@ -94,13 +96,22 @@ $(document).ready(function() {
                 $('.fileContent').html(fileName+'<br>'+fileContent).show();
             });
         },
+        listFiles: function () {
+            $(".files").html('');
+            $('.fileContent').html('');
+            GoldenEye.files[GoldenEye.filePag].forEach(function (item) {
+                $(".files").append('<li class="file">'+item+'</li>');
+            });
+        },
         pageFiles: function () {
 
             $('.fileContent').hide();
 
-            this.files.forEach(function (item) {
-                $(".files").append('<li class="file">'+item+'</li>');
-            });
+            $('.allPages').html(GoldenEye.files.length);
+
+            $('.currentPage').html(GoldenEye.filePag+1);
+
+            GoldenEye.listFiles();
 
             $(document).keyup(function (e) {
 
@@ -109,16 +120,27 @@ $(document).ready(function() {
                     $('.fileContent').hide();
 
                     let key;
+                    console.log(e.key);
 
                     if (e.key > 0 && e.key < 10)
                         key = e.key - 1;
-                    else if (e.key === 0)
+                    else if (e.key == 0)
                         key = 9;
                     else key = null;
 
-                    GoldenEye.openFile(GoldenEye.files[key]);
+                    console.log(key);
+
+                    GoldenEye.openFile(GoldenEye.files[GoldenEye.filePag][key]);
                 } else if (e.keyCode === 27) {
                     GoldenEye.router(GoldenEye.currentPage);
+                } else if (e.keyCode === 37 && GoldenEye.filePag > 0) {
+                    GoldenEye.filePag--;
+                    $('.currentPage').html(GoldenEye.filePag+1);
+                    GoldenEye.listFiles();
+                } else if (e.keyCode === 39 && GoldenEye.filePag < (GoldenEye.files.length-1)) {
+                    GoldenEye.filePag++;
+                    $('.currentPage').html(GoldenEye.filePag+1);
+                    GoldenEye.listFiles();
                 }
 
             });
@@ -244,6 +266,46 @@ $(document).ready(function() {
                 });
             });
         },
+        checkCancel: function (func, callback) {
+            let satCount = 0,
+                iteration = 0,
+                statusCheck = false,
+                cancelCount = 0;
+            GoldenEye.satStatus(function (data) {
+                $.each(data, function (parentKey) {
+                    $.each(data[parentKey], function (key, value) {
+                        if (key === 'status' && value === func) {
+                            statusCheck = true;
+                            satCount++;
+                        }
+                        if (key === 'location' && value === 'cancel' && statusCheck) {
+                            cancelCount++;
+                            statusCheck = false;
+                        }
+                    });
+                    iteration++;
+                    if (iteration === 7 && satCount > GoldenEye.minCondition && ((satCount - cancelCount) < GoldenEye.minCancel)) {
+                        callback();
+                    }
+                });
+            });
+        },
+        cancelSat: function (func) {
+            this.satStatus(function (data) {
+                for(let currentSat = 0; currentSat < GoldenEye.passwords.length; currentSat++) {
+                    if (data[currentSat]['status'] = func) {
+                        data[currentSat]['status'] = 'idle';
+                        data[currentSat]['start'] = data[currentSat]['end'] = data[currentSat]['location'] = '';
+                    }
+                }
+                $.ajax({
+                    context: this,
+                    type: "POST",
+                    data: {data:data},
+                    url: "updateSatStatus.php"
+                })
+            });
+        },
         updateSatStatus: function (satNumber, status, hackedSats = 0, callback) {
             satNumber -= 1;
             if (satNumber === 7) {
@@ -297,7 +359,7 @@ $(document).ready(function() {
                         end;
                     if (tillEnd) {
                         if (GoldenEye.debug) {
-                            end = Math.round(new Date(2017, 9, 26).getTime() / 1000);
+                            end = Math.round(new Date(2017, 9, 27).getTime() / 1000);
                         } else {
                             end = Math.round(new Date(2017, 10, 29).getTime() / 1000);
                         }
@@ -330,7 +392,7 @@ $(document).ready(function() {
                         end;
                     if (tillEnd) {
                         if (GoldenEye.debug) {
-                            end = Math.round(new Date(2017, 9, 26).getTime() / 1000);
+                            end = Math.round(new Date(2017, 9, 27).getTime() / 1000);
                         } else {
                             end = Math.round(new Date(2017, 10, 29).getTime() / 1000);
                         }
@@ -366,30 +428,32 @@ $(document).ready(function() {
                     data[satNumber]['start'] = nowStamp;
                     if (tillEnd) {
                         if (GoldenEye.debug) {
-                            end = Math.round(new Date(2017, 9, 25).getTime() / 1000);
+                            end = Math.round(new Date(2017, 9, 27).getTime() / 1000);
                         } else {
                             end = Math.round(new Date(2017, 10, 29).getTime() / 1000);
                         }
                         let iteration = 0;
                         data[satNumber]['end'] = end;
                         data[satNumber]['location'] = location;
-                        callbackSend = true;
-                        $.each(data, function (index) {
-                            iteration++;
-                            if (data[index]['status'] === status) {
-                                data[index]['start'] = nowStamp;
-                                data[index]['end'] = end;
-                                data[index]['location'] = location;
-                            }
-                            if (iteration > 6) {
-                                $.ajax({
-                                    context: this,
-                                    type: "POST",
-                                    data: {data: data},
-                                    url: "updateSatStatus.php"
-                                });
-                            }
-                        });
+                        if (location !== 'cancel') {
+                            callbackSend = true;
+                            $.each(data, function (index) {
+                                iteration++;
+                                if (data[index]['status'] === status) {
+                                    data[index]['start'] = nowStamp;
+                                    data[index]['end'] = end;
+                                    data[index]['location'] = location;
+                                }
+                                if (iteration > 6) {
+                                    $.ajax({
+                                        context: this,
+                                        type: "POST",
+                                        data: {data: data},
+                                        url: "updateSatStatus.php"
+                                    });
+                                }
+                            });
+                        }
                     } else {
                         if (GoldenEye.debug) {
                             end = Math.round(now.setMinutes(now.getMinutes() + 5) / 1000);
@@ -482,6 +546,22 @@ $(document).ready(function() {
                     }
                     satStatusElement.append('<p>Sat #' + satNumber + ': ' + satStatus.status + satStatus.progress + satStatus.location + '</p>');
                 }
+                GoldenEye.checkCancel('laser', function() {
+                    GoldenEye.cancelSat('laser');
+                    GoldenEye.currentFunction = 'idle';
+                });
+                GoldenEye.checkCancel('orbit', function() {
+                    GoldenEye.cancelSat('orbit');
+                    GoldenEye.currentFunction = 'idle';
+                });
+                GoldenEye.checkCancel('skyweb', function() {
+                    GoldenEye.cancelSat('skyweb');
+                    GoldenEye.currentFunction = 'idle';
+                });
+                GoldenEye.checkCancel('s/unity', function() {
+                    GoldenEye.cancelSat('s/unity');
+                    GoldenEye.currentFunction = 'idle';
+                });
             });
 
             setInterval(function() {
@@ -510,11 +590,29 @@ $(document).ready(function() {
                         }
                         satStatusElement.append('<p>Sat #' + satNumber + ': ' + satStatus.status + satStatus.progress + satStatus.location + '</p>');
                     }
+                    GoldenEye.checkCancel('laser', function() {
+                        GoldenEye.cancelSat('laser');
+                        GoldenEye.currentFunction = 'idle';
+                    });
+                    GoldenEye.checkCancel('orbit', function() {
+                        GoldenEye.cancelSat('orbit');
+                        GoldenEye.currentFunction = 'idle';
+                    });
+                    GoldenEye.checkCancel('skyweb', function() {
+                        GoldenEye.cancelSat('skyweb');
+                        GoldenEye.currentFunction = 'idle';
+                    });
+                    GoldenEye.checkCancel('s/unity', function() {
+                        GoldenEye.cancelSat('s/unity');
+                        GoldenEye.currentFunction = 'idle';
+                    });
                 });
             }, GoldenEye.refreshTime);
         },
         updateSatFunction: function (func, satNumber, hackedSats = 0, location = null, conditionCheck = null) {
             $('.satFunctions').hide();
+            $('.exit').hide();
+            $('.satCancel').show();
             GoldenEye.currentFunction = func;
             switch (func) {
                 case 'spy':
@@ -529,7 +627,7 @@ $(document).ready(function() {
                     break;
                 case 'laser':
                 case 'orbit':
-                    if (conditionCheck >= GoldenEye.minCondition || satNumber > Object.keys(GoldenEye.passwords).length)
+                    if ((conditionCheck >= GoldenEye.minCondition && location !== null) || satNumber > Object.keys(GoldenEye.passwords).length)
                         GoldenEye.updateSatStatusTime(satNumber, GoldenEye.currentFunction, hackedSats, true, location);
                     else
                         GoldenEye.updateSatStatus(satNumber, GoldenEye.currentFunction, hackedSats);
@@ -549,7 +647,9 @@ $(document).ready(function() {
             $('.self-destruction').hide();
             $('.landing').hide();
             $('.orbit').hide();
+            $('.satCancel').hide();
             $('.location').show();
+            $('.exit').show();
             GoldenEye.currentFunction = 'idle';
             satNumber -= 1;
             if (satNumber === 7) {
@@ -609,6 +709,11 @@ $(document).ready(function() {
             if (single === true) {
                 this.getSatStatus(satNumber, function (data) {
                     GoldenEye.currentFunction = data.status;
+                    if (GoldenEye.currentFunction !== 'idle') {
+                        $('.satFunctions').hide();
+                        $('.exit').hide();
+                        $('.satCancel').show();
+                    }
                     let satFunction = $('.satFunction');
                     satFunction.html(data.status + data.progress + data.location);
 
@@ -703,16 +808,19 @@ $(document).ready(function() {
                         switch (e.keyCode) {
                             case 76:
                                 GoldenEye.updateSatFunction('laser', satNumber, hackedSats, null, hackedSats);
-                                if (satNumber === 8 || (satNumber === 9 && hackedSats > GoldenEye.minCondition)) {
-                                    conditionElement = '.'+GoldenEye.currentFunction+' .condition';
-                                    conditionElement = $(conditionElement);
-                                    conditionElement.hide();
-                                    GoldenEye.setFocus();
-                                } else {
-                                    locationElement = '.'+GoldenEye.currentFunction+' .location';
-                                    locationElement = $(locationElement);
-                                    locationElement.hide();
-                                }
+                                GoldenEye.checkCondition('laser', function (data) {
+                                    console.log(satNumber);
+                                    if (satNumber === 8 || (satNumber === 9 && data+hackedSats >= GoldenEye.minCondition)) {
+                                        conditionElement = '.'+GoldenEye.currentFunction+' .condition';
+                                        conditionElement = $(conditionElement);
+                                        conditionElement.hide();
+                                        GoldenEye.setFocus();
+                                    } else {
+                                        locationElement = '.'+GoldenEye.currentFunction+' .location';
+                                        locationElement = $(locationElement);
+                                        locationElement.hide();
+                                    }
+                                });
                                 break;
                             case 84:
                                 GoldenEye.updateSatFunction('shield', satNumber, hackedSats);
@@ -733,11 +841,19 @@ $(document).ready(function() {
                                 GoldenEye.setFocus();
                                 break;
                             case 79:
-                                GoldenEye.updateSatFunction('orbit', satNumber, hackedSats);
-                                conditionElement = '.'+GoldenEye.currentFunction+' .condition';
-                                conditionElement = $(conditionElement);
-                                conditionElement.hide();
-                                GoldenEye.setFocus();
+                                GoldenEye.updateSatFunction('orbit', satNumber);
+                                GoldenEye.checkCondition('laser', function (data) {
+                                    if (satNumber === 8 || (satNumber === 9 && data >= GoldenEye.minCondition)) {
+                                        conditionElement = '.'+GoldenEye.currentFunction+' .condition';
+                                        conditionElement = $(conditionElement);
+                                        conditionElement.hide();
+                                        GoldenEye.setFocus();
+                                    } else {
+                                        locationElement = '.'+GoldenEye.currentFunction+' .location';
+                                        locationElement = $(locationElement);
+                                        locationElement.hide();
+                                    }
+                                });
                                 break;
                             case 27:
                                 window.location.href = 'index.html';

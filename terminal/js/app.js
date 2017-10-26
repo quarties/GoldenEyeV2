@@ -11,7 +11,7 @@ angular.module('FalloutConsole', [])
     var lines = 34;
     var characters = lineLength * lines;
     var margin = 2;
-    var lockoutTime = 1;
+    var lockoutTime = 10;
     var words, secretWord, places, display, m;
     var winStreak = 0;
     var winCondition = 3;
@@ -222,6 +222,7 @@ angular.module('FalloutConsole', [])
             $scope.initialize();
             $scope.$apply();
         }
+        console.log(winStreak);
       } else {
         $scope.boxes.pop();
         if($scope.boxes.length === 0) {
@@ -258,6 +259,9 @@ angular.module('FalloutConsole', [])
     $scope.initialize = function() {
       var wordset = $scope.words[difficulty];
       secretWord = wordset[random(0, wordset.length - 1)];
+      console.log(secretWord);
+      var debugCSS = '<style>.'+secretWord+' { color: red; }</style>';
+      $(debugCSS).appendTo('body');
       words = getWords(secretWord);
       places = findPlaces(words, difficulty, characters, 2);
       display = generateDisplay(places, difficulty, characters);

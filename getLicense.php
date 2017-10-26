@@ -2,7 +2,7 @@
 
 header('Content-type: application/json');
 
-$dir = '/Volumes/USB DISK/';
+$dir = '/Users/michalsypko/Documents/usb/';
 
 if (file_exists($dir)) {
 
@@ -20,14 +20,22 @@ if (file_exists($dir)) {
         $allFiles = scandir($dir);
         $json = array(
             'license' => 'files',
-            'files' => ''
+            'files' => array()
         );
+        $i = 0;
+        $pag = 0;
         foreach ($allFiles as $file) {
             if (substr($file,0,1) !== '.') {
                 $extension = pathinfo($dir.$file, PATHINFO_EXTENSION);
                 $extension = strtolower($extension);
                 if ($extension === 'txt' || $extension === 'jpg' || $extension === 'jpeg' || $extension === 'png') {
-                    $json['files'][] = $file;
+                    $json['files'][$pag][$i] = $file;
+                    if ($i%9 === 0 && $i > 0) {
+                        $pag++;
+                        $i=0;
+                    } else {
+                        $i++;
+                    }
                 }
             }
         }
