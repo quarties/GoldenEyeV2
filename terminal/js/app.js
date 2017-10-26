@@ -13,6 +13,10 @@ angular.module('FalloutConsole', [])
     var margin = 2;
     var lockoutTime = 1;
     var words, secretWord, places, display, m;
+    var winStreak = 0;
+    var winCondition = 3;
+    var satsLimit = 7;
+    var sats = 0;
 
     function random(min, max) {
       return Math.floor(Math.random() * (max - min + 1) + min);
@@ -206,7 +210,18 @@ angular.module('FalloutConsole', [])
       var currentWord = selected[0].className.slice(21, 21 + difficulty);
       if(currentWord === secretWord) {
         printLine("Passwort korrekt.");
-        $scope.gamestate = 'game-win';
+        winStreak++;
+        if (winStreak%winCondition === 0) {
+            sats++;
+            if (sats === satsLimit) {
+                $('.limited').hide();
+            }
+            $scope.gamestate = 'game-win';
+            $('.unlocked').html(sats);
+        } else {
+            $scope.initialize();
+            $scope.$apply();
+        }
       } else {
         $scope.boxes.pop();
         if($scope.boxes.length === 0) {
@@ -244,8 +259,6 @@ angular.module('FalloutConsole', [])
       var wordset = $scope.words[difficulty];
       secretWord = wordset[random(0, wordset.length - 1)];
       words = getWords(secretWord);
-      
-      console.log(secretWord);
       places = findPlaces(words, difficulty, characters, 2);
       display = generateDisplay(places, difficulty, characters);
       $scope.screen = renderScreen(display, lines, lineLength);
@@ -268,11 +281,17 @@ angular.module('FalloutConsole', [])
 
     //keydown event handler to manage cursor
     $('body').keydown(function(e) {
-      if([13, 37, 38, 39, 40].indexOf(e.keyCode) >= 0) {
+      if([13, 37, 38, 39, 40, 27].indexOf(e.keyCode) >= 0) {
         e.preventDefault();
         if($scope.gamestate !== 'playing' && $scope.gamestate !== 'waiting') {
           if ($scope.gamestate === 'game-win') {
-              window.location.href = "../1.2.php";
+            if (e.keyCode === 13 && sats < satsLimit) {
+                $scope.gamestate = 'playing';
+                $scope.initialize();
+                $scope.$apply();
+            } else if (e.keyCode === 27) {
+                window.location.href = "../bond.html?sats="+sats;
+            }
           } else {
               $scope.initialize();
               $scope.$apply();

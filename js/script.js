@@ -1,6 +1,6 @@
 $(document).ready(function() {
     window.GoldenEye = {
-        debug: true,
+        debug: false,
         currentPage: null,
         currentFunction: null,
         licenseType: null,
@@ -18,10 +18,10 @@ $(document).ready(function() {
         ],
         passwordAll: 'all',
         author: "Kurtz Korinokabe Software Combinat",
-        version: "v. 2-QRT-20-18-DEV",
+        version: "v. 2-QRT-20-18-"+((!this.debug) ? 'DEV' : 'PROD'),
         getCurrentFileName: function (){
-            var pagePathName = window.location.pathname;
-            var filename = pagePathName.replace(/^.*[\\\/]/, '');
+            let pagePathName = window.location.pathname;
+            let filename = pagePathName.replace(/^.*[\\\/]/, '');
             filename = filename.substr(0, filename.lastIndexOf('.')) || filename;
             return filename;
         },
@@ -57,7 +57,7 @@ $(document).ready(function() {
                                 window.location.href = 'files.html';
                                 break;
                             case 'bond':
-                                window.location.href = 'bond.html';
+                                window.location.href = 'terminal/';
                                 break;
                             case 'normal':
                                 window.location.href = 'normal.html';
@@ -87,7 +87,7 @@ $(document).ready(function() {
             });
         },
         openFile: function (fileName) {
-            var fileContent = null;
+            let fileContent = null;
             this.getFileContent(fileName, function (data) {
                 fileContent = data;
 
@@ -108,7 +108,7 @@ $(document).ready(function() {
 
                     $('.fileContent').hide();
 
-                    var key;
+                    let key;
 
                     if (e.key > 0 && e.key < 10)
                         key = e.key - 1;
@@ -136,7 +136,7 @@ $(document).ready(function() {
 
             $('.satNumber').html(satNumber);
 
-            var countDownFinal = new Date();
+            let countDownFinal = new Date();
             if (GoldenEye.debug) {
                 countDownFinal.setSeconds(countDownFinal.getSeconds() + 5);
             } else {
@@ -144,7 +144,7 @@ $(document).ready(function() {
             }
 
             $('.countdownTimer').countdown(countDownFinal, function(event) {
-                var totalMinutes = event.offset.hours * 60 + event.offset.minutes;
+                let totalMinutes = event.offset.hours * 60 + event.offset.minutes;
                 $(this).html(event.strftime(totalMinutes + ':%S'));
             }).on('finish.countdown', function () {
                 GoldenEye.router(GoldenEye.currentPage, true, satNumber);
@@ -153,7 +153,7 @@ $(document).ready(function() {
             $('.countdown').show();
         },
         passwordCheck: function (password, key = false) {
-            var satNumber = this.passwords.indexOf(password)+1;
+            let satNumber = this.passwords.indexOf(password)+1;
             if (key && password === GoldenEye.passwordAll) {
                 satNumber = 8;
             }
@@ -169,7 +169,7 @@ $(document).ready(function() {
         },
         page404: function () {
             $('.countdown').hide();
-            var input = $('input');
+            let input = $('input');
             input.toggleClass('program');
             $(document).keyup(function (e) {
                 if (e.keyCode === 13) {
@@ -183,7 +183,7 @@ $(document).ready(function() {
             });
         },
         pageNormal: function () {
-            var input = $('input');
+            let input = $('input');
             $(document).keyup(function (e) {
                 if (e.keyCode === 13) {
                     window.GoldenEye.passwordCheck(input.val(), true);
@@ -198,29 +198,29 @@ $(document).ready(function() {
         /*getSatProgress: function (satNumber, callback) {
             this.satStatus(function (data) {
                 satNumber -= 1;
-                var start = data[satNumber]['start'];
-                var end = data[satNumber]['end'];
-                var now = parseInt(new Date().getTime() / 1000);
-                var progress = Math.round((now-start)/(end-start)*100);
+                let start = data[satNumber]['start'];
+                let end = data[satNumber]['end'];
+                let now = parseInt(new Date().getTime() / 1000);
+                let progress = Math.round((now-start)/(end-start)*100);
                 callback(progress);
             })
         },*/
         getSatStatus: function (satNumber, callback) {
             this.satStatus(function (data) {
                 satNumber -= 1;
-                var satStatus = {
+                let satStatus = {
                     "status": data[satNumber]['status'],
                     "progress": "",
                     "location": ""
                 };
-                var start = data[satNumber]['start'];
-                var end = data[satNumber]['end'];
+                let start = data[satNumber]['start'];
+                let end = data[satNumber]['end'];
                 if (start && end) {
-                    var now = Math.round(new Date().getTime() / 1000);
-                    var progress = Math.round((now-start)/(end-start)*100);
+                    let now = Math.round(new Date().getTime() / 1000);
+                    let progress = Math.round((now-start)/(end-start)*100);
                     satStatus.progress = ' '+progress+'%';
                 }
-                var location = data[satNumber]['location'];
+                let location = data[satNumber]['location'];
                 if (location) {
                     satStatus.location = ' '+location;
                 }
@@ -228,7 +228,7 @@ $(document).ready(function() {
             });
         },
         checkCondition: function (func, callback) {
-            var satCount = 0,
+            let satCount = 0,
                 iteration = 0;
             GoldenEye.satStatus(function (data) {
                 $.each(data, function (parentKey) {
@@ -244,11 +244,11 @@ $(document).ready(function() {
                 });
             });
         },
-        updateSatStatus: function (satNumber, status, callback) {
+        updateSatStatus: function (satNumber, status, hackedSats = 0, callback) {
             satNumber -= 1;
             if (satNumber === 7) {
                     this.satStatus(function (data) {
-                        for (var currentSat = 0; currentSat < satNumber; currentSat++) {
+                        for (let currentSat = 0; currentSat < satNumber; currentSat++) {
                             data[currentSat]['status'] = status;
                             data[currentSat]['start'] = data[currentSat]['end'] = data[currentSat]['location'] = '';
                         }
@@ -260,6 +260,20 @@ $(document).ready(function() {
                             complete: callback
                         })
                     });
+            } else if (satNumber === 8) {
+                this.satStatus(function (data) {
+                    for (let currentSat = 0; currentSat < hackedSats; currentSat++) {
+                        data[currentSat]['status'] = status;
+                        data[currentSat]['start'] = data[currentSat]['end'] = data[currentSat]['location'] = '';
+                    }
+                    $.ajax({
+                        context: this,
+                        type: "POST",
+                        data: {data:data},
+                        url: "updateSatStatus.php",
+                        complete: callback
+                    })
+                });
             } else {
                 this.satStatus(function (data) {
                     data[satNumber]['status'] = status;
@@ -274,16 +288,16 @@ $(document).ready(function() {
                 });
             }
         },
-        updateSatStatusTime: function (satNumber, status, tillEnd, location = null) {
+        updateSatStatusTime: function (satNumber, status, hackedSats = 0, tillEnd, location = null) {
             satNumber -= 1;
             if (satNumber === 7) {
                 this.satStatus(function (data) {
-                    var now = new Date(),
+                    let now = new Date(),
                         nowStamp = Math.round(now.getTime() / 1000),
                         end;
                     if (tillEnd) {
                         if (GoldenEye.debug) {
-                            end = Math.round(new Date(2017, 9, 25).getTime() / 1000);
+                            end = Math.round(new Date(2017, 9, 26).getTime() / 1000);
                         } else {
                             end = Math.round(new Date(2017, 10, 29).getTime() / 1000);
                         }
@@ -295,7 +309,40 @@ $(document).ready(function() {
                         }
                     }
 
-                    for(var currentSat = 0; currentSat < satNumber; currentSat++) {
+                    for(let currentSat = 0; currentSat < satNumber; currentSat++) {
+                        data[currentSat]['status'] = status;
+                        data[currentSat]['start'] = nowStamp;
+                        data[currentSat]['end'] = end;
+                        data[currentSat]['location'] = location;
+                    }
+
+                    $.ajax({
+                        context: this,
+                        type: "POST",
+                        data: {data: data},
+                        url: "updateSatStatus.php"
+                    });
+                });
+            } else if (satNumber === 8) {
+                this.satStatus(function (data) {
+                    let now = new Date(),
+                        nowStamp = Math.round(now.getTime() / 1000),
+                        end;
+                    if (tillEnd) {
+                        if (GoldenEye.debug) {
+                            end = Math.round(new Date(2017, 9, 26).getTime() / 1000);
+                        } else {
+                            end = Math.round(new Date(2017, 10, 29).getTime() / 1000);
+                        }
+                    } else {
+                        if (GoldenEye.debug) {
+                            end = Math.round(now.setMinutes(now.getMinutes() + 5) / 1000);
+                        } else {
+                            end = Math.round(now.setHours(now.getHours() + 5) / 1000);
+                        }
+                    }
+
+                    for(let currentSat = 0; currentSat < hackedSats; currentSat++) {
                         data[currentSat]['status'] = status;
                         data[currentSat]['start'] = nowStamp;
                         data[currentSat]['end'] = end;
@@ -310,9 +357,9 @@ $(document).ready(function() {
                     });
                 });
             } else {
-                var callbackSend = false;
+                let callbackSend = false;
                 this.satStatus(function (data) {
-                    var now = new Date(),
+                    let now = new Date(),
                         nowStamp = Math.round(now.getTime() / 1000),
                         end;
                     data[satNumber]['status'] = status;
@@ -323,7 +370,7 @@ $(document).ready(function() {
                         } else {
                             end = Math.round(new Date(2017, 10, 29).getTime() / 1000);
                         }
-                        var iteration = 0;
+                        let iteration = 0;
                         data[satNumber]['end'] = end;
                         data[satNumber]['location'] = location;
                         callbackSend = true;
@@ -363,11 +410,24 @@ $(document).ready(function() {
                 });
             }
         },
-        updateSatStatusLocation: function (satNumber, status, location) {
+        updateSatStatusLocation: function (satNumber, status, location, hackedSats = 0) {
             satNumber -= 1;
             if (satNumber === 7) {
                 this.satStatus(function (data) {
-                    for(var currentSat = 0; currentSat < satNumber; currentSat++) {
+                    for(let currentSat = 0; currentSat < satNumber; currentSat++) {
+                        data[currentSat]['status'] = status;
+                        data[currentSat]['location'] = location;
+                    }
+                    $.ajax({
+                        context: this,
+                        type: "POST",
+                        data: {data:data},
+                        url: "updateSatStatus.php"
+                    })
+                });
+            } else if (satNumber === 8) {
+                this.satStatus(function (data) {
+                    for(let currentSat = 0; currentSat < hackedSats; currentSat++) {
                         data[currentSat]['status'] = status;
                         data[currentSat]['location'] = location;
                     }
@@ -394,29 +454,29 @@ $(document).ready(function() {
         showSatStatus: function () {
             $("body").append('<div class="satStatus"></div>');
 
-            var satNumber;
-            var satStatusElement = $(".satStatus");
+            let satNumber;
+            let satStatusElement = $(".satStatus");
 
             this.satStatus(function (data) {
                 satStatusElement.html('');
-                for (var i in data) {
+                for (let i in data) {
                     satNumber = parseInt(i)+1;
-                    var satStatus = {
+                    let satStatus = {
                         "status": data[i]['status'],
                         "progress": "",
                         "location": ""
                     };
-                    var start = data[i]['start'];
-                    var end = data[i]['end'];
+                    let start = data[i]['start'];
+                    let end = data[i]['end'];
                     if (start && end) {
-                        var now = Math.round(new Date().getTime() / 1000);
-                        var progress = Math.round((now-start)/(end-start)*100);
+                        let now = Math.round(new Date().getTime() / 1000);
+                        let progress = Math.round((now-start)/(end-start)*100);
                         if (now >= end) {
                             GoldenEye.updateSatStatus(satNumber, 'destroyed');
                         } else
                             satStatus.progress = ' '+progress+'%';
                     }
-                    var location = data[i]['location'];
+                    let location = data[i]['location'];
                     if (location) {
                         satStatus.location = ' '+location;
                     }
@@ -427,24 +487,24 @@ $(document).ready(function() {
             setInterval(function() {
                 GoldenEye.satStatus(function (data) {
                     satStatusElement.html('');
-                    for (var i in data) {
+                    for (let i in data) {
                         satNumber = parseInt(i) + 1;
-                        var satStatus = {
+                        let satStatus = {
                             "status": data[i]['status'],
                             "progress": "",
                             "location": ""
                         };
-                        var start = data[i]['start'];
-                        var end = data[i]['end'];
+                        let start = data[i]['start'];
+                        let end = data[i]['end'];
                         if (start && end) {
-                            var now = Math.round(new Date().getTime() / 1000);
-                            var progress = Math.round((now - start) / (end - start) * 100);
+                            let now = Math.round(new Date().getTime() / 1000);
+                            let progress = Math.round((now - start) / (end - start) * 100);
                             if (now >= end) {
                                 GoldenEye.updateSatStatus(satNumber, 'destroyed');
                             } else
                                 satStatus.progress = ' '+progress+'%';
                         }
-                        var location = data[i]['location'];
+                        let location = data[i]['location'];
                         if (location) {
                             satStatus.location = ' '+location;
                         }
@@ -453,35 +513,35 @@ $(document).ready(function() {
                 });
             }, GoldenEye.refreshTime);
         },
-        updateSatFunction: function (func, satNumber, location = null, conditionCheck = null) {
+        updateSatFunction: function (func, satNumber, hackedSats = 0, location = null, conditionCheck = null) {
             $('.satFunctions').hide();
             GoldenEye.currentFunction = func;
             switch (func) {
                 case 'spy':
                 case 'energy':
-                    GoldenEye.updateSatStatusLocation(satNumber, GoldenEye.currentFunction, location);
+                    GoldenEye.updateSatStatusLocation(satNumber, GoldenEye.currentFunction, location, hackedSats);
                     break;
                 case 'self-destruction':
-                    GoldenEye.updateSatStatusTime(satNumber, GoldenEye.currentFunction, false);
+                    GoldenEye.updateSatStatusTime(satNumber, GoldenEye.currentFunction, hackedSats, false);
                     break;
                 case 'landing':
-                    GoldenEye.updateSatStatusTime(satNumber, GoldenEye.currentFunction, true, location);
+                    GoldenEye.updateSatStatusTime(satNumber, GoldenEye.currentFunction, hackedSats, true, location);
                     break;
                 case 'laser':
                 case 'orbit':
-                    if (conditionCheck >= GoldenEye.minCondition)
-                        GoldenEye.updateSatStatusTime(satNumber, GoldenEye.currentFunction, true, location);
+                    if (conditionCheck >= GoldenEye.minCondition || satNumber > Object.keys(GoldenEye.passwords).length)
+                        GoldenEye.updateSatStatusTime(satNumber, GoldenEye.currentFunction, hackedSats, true, location);
                     else
-                        GoldenEye.updateSatStatus(satNumber, GoldenEye.currentFunction);
+                        GoldenEye.updateSatStatus(satNumber, GoldenEye.currentFunction, hackedSats);
                     break;
                 default:
-                    GoldenEye.updateSatStatus(satNumber, GoldenEye.currentFunction);
+                    GoldenEye.updateSatStatus(satNumber, GoldenEye.currentFunction, hackedSats);
                     break;
             }
             func = '.'+func;
             $(func).show();
         },
-        clearSatFunction: function (satNumber) {
+        clearSatFunction: function (satNumber, hackedSats = 0) {
             $('.laser').hide();
             $('.shield').hide();
             $('.spy').hide();
@@ -494,7 +554,20 @@ $(document).ready(function() {
             satNumber -= 1;
             if (satNumber === 7) {
                 this.satStatus(function (data) {
-                    for(var currentSat = 0; currentSat < satNumber; currentSat++) {
+                    for(let currentSat = 0; currentSat < satNumber; currentSat++) {
+                        data[currentSat]['status'] = GoldenEye.currentFunction;
+                        data[currentSat]['start'] = data[currentSat]['end'] = data[currentSat]['location'] = '';
+                    }
+                    $.ajax({
+                        context: this,
+                        type: "POST",
+                        data: {data:data},
+                        url: "updateSatStatus.php"
+                    })
+                });
+            } else if (satNumber === 8) {
+                this.satStatus(function (data) {
+                    for(let currentSat = 0; currentSat < hackedSats; currentSat++) {
                         data[currentSat]['status'] = GoldenEye.currentFunction;
                         data[currentSat]['start'] = data[currentSat]['end'] = data[currentSat]['location'] = '';
                     }
@@ -520,23 +593,23 @@ $(document).ready(function() {
             $('.satFunctions').show();
         },
         setFocus: function () {
-            var input = '.'+GoldenEye.currentFunction+' .location input';
+            let input = '.'+GoldenEye.currentFunction+' .location input';
             $(input).focus();
         },
-        pageSat: function (satNumber, single = true) {
+        pageSat: function (satNumber, single = true, hackedSats = 0) {
 
-            var locationElement,
+            let locationElement,
                 targetLocation,
                 conditionElement,
                 input;
 
             this.showSatStatus();
+            $('.satNumber').html((satNumber===9) ? hackedSats : satNumber);
 
             if (single === true) {
-                $('.satNumber').html(satNumber);
                 this.getSatStatus(satNumber, function (data) {
                     GoldenEye.currentFunction = data.status;
-                    var satFunction = $('.satFunction');
+                    let satFunction = $('.satFunction');
                     satFunction.html(data.status + data.progress + data.location);
 
                     $(document).keyup(function (e) {
@@ -544,7 +617,7 @@ $(document).ready(function() {
                             switch (e.keyCode) {
                                 case 76:
                                     GoldenEye.checkCondition('laser', function(data) {
-                                        GoldenEye.updateSatFunction('laser', satNumber, null, data);
+                                        GoldenEye.updateSatFunction('laser', satNumber, 0, null, data);
                                         if (data >= GoldenEye.minCondition) {
                                             conditionElement = '.'+GoldenEye.currentFunction+' .condition';
                                             conditionElement = $(conditionElement);
@@ -592,15 +665,14 @@ $(document).ready(function() {
                                         }
                                     });
                                     break;
+                                case 27:
+                                    window.location.href = 'index.html';
+                                    break;
                             }
                         } else {
                             if (e.keyCode === 27) {
-                                if (GoldenEye.debug) {
-                                    GoldenEye.clearSatFunction(satNumber);
-                                    $('input').show();
-                                } else {
-                                    window.location.href = 'index.html';
-                                }
+                                GoldenEye.clearSatFunction(satNumber);
+                                $('input').show();
                             }
                         }
 
@@ -611,7 +683,7 @@ $(document).ready(function() {
                             input = $(input);
                             targetLocation = input.val();
                             GoldenEye.checkCondition(GoldenEye.currentFunction, function (data) {
-                                GoldenEye.updateSatFunction(GoldenEye.currentFunction, satNumber, targetLocation, data);
+                                GoldenEye.updateSatFunction(GoldenEye.currentFunction, satNumber, 0, targetLocation, data);
                             });
                             input.val("");
                             locationElement.hide();
@@ -620,7 +692,7 @@ $(document).ready(function() {
                 });
                 setInterval(function() {
                     GoldenEye.getSatStatus(satNumber, function (data) {
-                        var satFunction = $('.satFunction');
+                        let satFunction = $('.satFunction');
                         satFunction.html(data.status + data.progress + data.location);
                     });
                 }, GoldenEye.refreshTime);
@@ -630,46 +702,51 @@ $(document).ready(function() {
                     if(GoldenEye.currentFunction === 'idle') {
                         switch (e.keyCode) {
                             case 76:
-                                GoldenEye.updateSatFunction('laser', satNumber);
-                                conditionElement = '.'+GoldenEye.currentFunction+' .condition';
-                                conditionElement = $(conditionElement);
-                                conditionElement.hide();
-                                GoldenEye.setFocus();
+                                GoldenEye.updateSatFunction('laser', satNumber, hackedSats, null, hackedSats);
+                                if (satNumber === 8 || (satNumber === 9 && hackedSats > GoldenEye.minCondition)) {
+                                    conditionElement = '.'+GoldenEye.currentFunction+' .condition';
+                                    conditionElement = $(conditionElement);
+                                    conditionElement.hide();
+                                    GoldenEye.setFocus();
+                                } else {
+                                    locationElement = '.'+GoldenEye.currentFunction+' .location';
+                                    locationElement = $(locationElement);
+                                    locationElement.hide();
+                                }
                                 break;
                             case 84:
-                                GoldenEye.updateSatFunction('shield', satNumber);
+                                GoldenEye.updateSatFunction('shield', satNumber, hackedSats);
                                 break;
                             case 83:
-                                GoldenEye.updateSatFunction('spy', satNumber);
+                                GoldenEye.updateSatFunction('spy', satNumber, hackedSats);
                                 GoldenEye.setFocus();
                                 break;
                             case 69:
-                                GoldenEye.updateSatFunction('energy', satNumber);
+                                GoldenEye.updateSatFunction('energy', satNumber, hackedSats);
                                 GoldenEye.setFocus();
                                 break;
                             case 68:
-                                GoldenEye.updateSatFunction('self-destruction', satNumber);
+                                GoldenEye.updateSatFunction('self-destruction', satNumber, hackedSats);
                                 break;
                             case 65:
-                                GoldenEye.updateSatFunction('landing', satNumber);
+                                GoldenEye.updateSatFunction('landing', satNumber, hackedSats);
                                 GoldenEye.setFocus();
                                 break;
                             case 79:
-                                GoldenEye.updateSatFunction('orbit', satNumber);
+                                GoldenEye.updateSatFunction('orbit', satNumber, hackedSats);
                                 conditionElement = '.'+GoldenEye.currentFunction+' .condition';
                                 conditionElement = $(conditionElement);
                                 conditionElement.hide();
                                 GoldenEye.setFocus();
+                                break;
+                            case 27:
+                                window.location.href = 'index.html';
                                 break;
                         }
                     } else {
                         if (e.keyCode === 27) {
-                            if (GoldenEye.debug) {
-                                GoldenEye.clearSatFunction(satNumber);
-                                $('input').show();
-                            } else {
-                                window.location.href = 'index.html';
-                            }
+                            GoldenEye.clearSatFunction(satNumber, hackedSats);
+                            $('input').show();
                         }
                     }
 
@@ -681,7 +758,7 @@ $(document).ready(function() {
                         input = $(input);
                         targetLocation = input.val();
                         GoldenEye.checkCondition(GoldenEye.currentFunction, function (data) {
-                            GoldenEye.updateSatFunction(GoldenEye.currentFunction, satNumber, targetLocation, data);
+                            GoldenEye.updateSatFunction(GoldenEye.currentFunction, satNumber, hackedSats, targetLocation, data);
                         });
                         input.val("");
                         locationElement.hide();
@@ -695,7 +772,7 @@ $(document).ready(function() {
             $('.func').html(func);
             end = new Date(end*1000);
             $('.countdownTimer').countdown(end, function(event) {
-                var totalHours = event.offset.days * 24 + event.offset.hours;
+                let totalHours = event.offset.days * 24 + event.offset.hours;
                 $(this).html(event.strftime(totalHours + ':%M:%S'));
             });
             $('.countdown').show();
@@ -712,7 +789,7 @@ $(document).ready(function() {
             });
         },
         pageIndex: function () {
-            var funcCheck = 'laser';
+            let funcCheck = 'laser';
             GoldenEye.checkCondition(funcCheck, function (data) {
                 if (data < 5) {
                     funcCheck = 'orbit';
@@ -749,16 +826,16 @@ $(document).ready(function() {
 
             this.getLicense(function (data) {
 
-                var $_GET = {};
+                let $_GET = {};
                 if(document.location.toString().indexOf('?') !== -1) {
-                    var query = document.location
+                    let query = document.location
                         .toString()
                         .replace(/^.*?\?/, '')
                         .replace(/#.*$/, '')
                         .split('&');
 
-                    for(var i=0, l=query.length; i<l; i++) {
-                        var aux = decodeURIComponent(query[i]).split('=');
+                    for(let i=0, l=query.length; i<l; i++) {
+                        let aux = decodeURIComponent(query[i]).split('=');
                         $_GET[aux[0]] = aux[1];
                     }
                 }
@@ -784,6 +861,10 @@ $(document).ready(function() {
                         break;
                     case 'multiple-sat':
                         this.pageSat(8, false);
+                        break;
+                    case 'bond':
+                        ($_GET['sats'] > Object.keys(GoldenEye.passwords).length) ? $_GET['sats'] = 7 : $_GET['sats'];
+                        this.pageSat(9, false, $_GET['sats']);
                         break;
                     default:
                         this.pageIndex();
