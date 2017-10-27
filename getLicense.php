@@ -4,13 +4,13 @@ header('Content-type: application/json');
 
 $dir = '/media/pi/';
 
-if (file_exists($dir.'LICENSE')) {
+if (file_exists($dir.'LICENSE/')) {
 
     $licenseFile = 'license.txt';
 
-    if (file_exists($dir.$licenseFile)) {
+    if (file_exists($dir.'LICENSE/'.$licenseFile)) {
 
-        $license = file_get_contents($dir.$licenseFile);
+        $license = file_get_contents($dir.'LICENSE/'.$licenseFile);
 
         $json = array(
             'license' => $license
