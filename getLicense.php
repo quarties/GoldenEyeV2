@@ -2,9 +2,9 @@
 
 header('Content-type: application/json');
 
-$dir = '/Users/michalsypko/Documents/usb/';
+$dir = '/media/pi/';
 
-if (file_exists($dir)) {
+if (file_exists($dir.'LICENSE')) {
 
     $licenseFile = 'license.txt';
 
@@ -42,9 +42,11 @@ if (file_exists($dir)) {
     }
 
 } else {
+
     $json = array(
         'license' => '404'
     );
+    $json = scandir($dir);
 }
 
 echo json_encode($json);
