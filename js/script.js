@@ -1,6 +1,6 @@
 $(document).ready(function() {
     window.GoldenEye = {
-        debug: true,
+        debug: false,
         currentPage: null,
         currentFunction: null,
         licenseType: null,
@@ -10,17 +10,17 @@ $(document).ready(function() {
         filePag: 0,
         refreshTime: 500,
         passwords: [
-            'ge1',
-            'ge2',
-            'ge3',
-            'ge4',
-            'ge5',
-            'ge6',
-            'ge7'
+            'LV-CE-72-1490',
+            'LV-CE-28-1990',
+            'LV-CE-77-7777',
+            'LV-CE-84-4190',
+            'LV-CE-20-0719',
+            'LV-CE-10-0492',
+            'LV-CE-01-1502'
         ],
-        passwordAll: 'all',
+        passwordAll: 'LV-CE-',
         author: "Kurtz Korinokabe Software Combinat",
-        version: "v. 2-QRT-20-18-"+((!this.debug) ? 'DEV' : 'PROD'),
+        version: "v. 2-QRT-20-18-PROD",
         getCurrentFileName: function (){
             let pagePathName = window.location.pathname;
             let filename = pagePathName.replace(/^.*[\\\/]/, '');
@@ -32,6 +32,14 @@ $(document).ready(function() {
                 context: this,
                 type: "POST",
                 url: "getLicense.php",
+                success: callback
+            });
+        },
+        getExtra: function (callback) {
+            $.ajax({
+                context: this,
+                type: "POST",
+                url: "getExtra.php",
                 success: callback
             });
         },
@@ -359,7 +367,7 @@ $(document).ready(function() {
                         end;
                     if (tillEnd) {
                         if (GoldenEye.debug) {
-                            end = Math.round(new Date(2017, 9, 27).getTime() / 1000);
+                            end = Math.round(new Date(2017, 9, 28).getTime() / 1000);
                         } else {
                             end = Math.round(new Date(2017, 10, 29).getTime() / 1000);
                         }
@@ -392,7 +400,7 @@ $(document).ready(function() {
                         end;
                     if (tillEnd) {
                         if (GoldenEye.debug) {
-                            end = Math.round(new Date(2017, 9, 27).getTime() / 1000);
+                            end = Math.round(new Date(2017, 9, 28).getTime() / 1000);
                         } else {
                             end = Math.round(new Date(2017, 10, 29).getTime() / 1000);
                         }
@@ -428,7 +436,7 @@ $(document).ready(function() {
                     data[satNumber]['start'] = nowStamp;
                     if (tillEnd) {
                         if (GoldenEye.debug) {
-                            end = Math.round(new Date(2017, 9, 27).getTime() / 1000);
+                            end = Math.round(new Date(2017, 9, 28).getTime() / 1000);
                         } else {
                             end = Math.round(new Date(2017, 10, 29).getTime() / 1000);
                         }
@@ -558,8 +566,8 @@ $(document).ready(function() {
                     GoldenEye.cancelSat('skyweb');
                     GoldenEye.currentFunction = 'idle';
                 });
-                GoldenEye.checkCancel('s/unity', function() {
-                    GoldenEye.cancelSat('s/unity');
+                GoldenEye.checkCancel('sunity', function() {
+                    GoldenEye.cancelSat('sunity');
                     GoldenEye.currentFunction = 'idle';
                 });
             });
@@ -602,8 +610,8 @@ $(document).ready(function() {
                         GoldenEye.cancelSat('skyweb');
                         GoldenEye.currentFunction = 'idle';
                     });
-                    GoldenEye.checkCancel('s/unity', function() {
-                        GoldenEye.cancelSat('s/unity');
+                    GoldenEye.checkCancel('sunity', function() {
+                        GoldenEye.cancelSat('sunity');
                         GoldenEye.currentFunction = 'idle';
                     });
                 });
@@ -627,6 +635,8 @@ $(document).ready(function() {
                     break;
                 case 'laser':
                 case 'orbit':
+                case 'skyweb':
+                case 'sunity':
                     if ((conditionCheck >= GoldenEye.minCondition && location !== null) || satNumber > Object.keys(GoldenEye.passwords).length)
                         GoldenEye.updateSatStatusTime(satNumber, GoldenEye.currentFunction, hackedSats, true, location);
                     else
@@ -647,6 +657,8 @@ $(document).ready(function() {
             $('.self-destruction').hide();
             $('.landing').hide();
             $('.orbit').hide();
+            $('.skyweb').hide();
+            $('.sunity').hide();
             $('.satCancel').hide();
             $('.location').show();
             $('.exit').show();
@@ -695,6 +707,9 @@ $(document).ready(function() {
         setFocus: function () {
             let input = '.'+GoldenEye.currentFunction+' .location input';
             $(input).focus();
+        },
+        checkSD: function () {
+
         },
         pageSat: function (satNumber, single = true, hackedSats = 0) {
 
@@ -806,6 +821,38 @@ $(document).ready(function() {
                 $(document).keyup(function (e) {
                     if(GoldenEye.currentFunction === 'idle') {
                         switch (e.keyCode) {
+                            case 87:
+                                GoldenEye.updateSatFunction('skyweb', satNumber, hackedSats, null, hackedSats);
+                                GoldenEye.checkCondition('skyweb', function (data) {
+                                    console.log(satNumber);
+                                    if (satNumber === 8 || (satNumber === 9 && data+hackedSats >= GoldenEye.minCondition)) {
+                                        conditionElement = '.'+GoldenEye.currentFunction+' .condition';
+                                        conditionElement = $(conditionElement);
+                                        conditionElement.hide();
+                                        GoldenEye.setFocus();
+                                    } else {
+                                        locationElement = '.'+GoldenEye.currentFunction+' .location';
+                                        locationElement = $(locationElement);
+                                        locationElement.hide();
+                                    }
+                                });
+                                break;
+                            case 85:
+                                GoldenEye.updateSatFunction('sunity', satNumber, hackedSats, null, hackedSats);
+                                GoldenEye.checkCondition('sunity', function (data) {
+                                    console.log(satNumber);
+                                    if (satNumber === 8 || (satNumber === 9 && data+hackedSats >= GoldenEye.minCondition)) {
+                                        conditionElement = '.'+GoldenEye.currentFunction+' .condition';
+                                        conditionElement = $(conditionElement);
+                                        conditionElement.hide();
+                                        GoldenEye.setFocus();
+                                    } else {
+                                        locationElement = '.'+GoldenEye.currentFunction+' .location';
+                                        locationElement = $(locationElement);
+                                        locationElement.hide();
+                                    }
+                                });
+                                break;
                             case 76:
                                 GoldenEye.updateSatFunction('laser', satNumber, hackedSats, null, hackedSats);
                                 GoldenEye.checkCondition('laser', function (data) {
@@ -914,7 +961,7 @@ $(document).ready(function() {
                             funcCheck = 'skyweb';
                             GoldenEye.checkCondition(funcCheck, function (data) {
                                 if (data < 5) {
-                                    funcCheck = 's/unity';
+                                    funcCheck = 'sunity';
                                     GoldenEye.checkCondition(funcCheck, function (data) {
                                         if (data >= 5) {
                                             GoldenEye.getIndexCountdownTime(funcCheck);
@@ -981,6 +1028,15 @@ $(document).ready(function() {
                     case 'bond':
                         ($_GET['sats'] > Object.keys(GoldenEye.passwords).length) ? $_GET['sats'] = 7 : $_GET['sats'];
                         this.pageSat(9, false, $_GET['sats']);
+                        GoldenEye.getExtra(function (data) {
+                            if (data['license'] !== '404') {
+                                if(data['extra'] === 'skyweb') {
+                                    $('.skyweb-option').show();
+                                } else if(data['extra'] === 'sunity') {
+                                    $('.sunity-option').show();
+                                }
+                            }
+                        });
                         break;
                     default:
                         this.pageIndex();

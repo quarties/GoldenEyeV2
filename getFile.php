@@ -6,7 +6,7 @@ $file = $_POST['fileName'];
 $extension = pathinfo($dir.$file, PATHINFO_EXTENSION);
 $extension = strtolower($extension);
 
-if ($extension === 'txt') {
+if ($extension === 'txt' && $file != 'license.txt' && $file != 'extra.txt') {
     $content = file_get_contents($dir.$file);
     echo mb_convert_encoding($content, 'UTF-8', mb_detect_encoding($content, 'UTF-8, ISO-8859-1', true));
     file_get_contents($dir . $file);
