@@ -17,7 +17,16 @@ if (file_exists($dir.'LICENSE')) {
         );
 
     } else {
-        $allFiles = scandir($dir);
+        $json = array(
+            'license' => '404'
+        );
+    }
+
+} else {
+
+    $filesDir = scandir($dir);
+    if ($filesDir[2]) {
+        $allFiles = scandir($filesDir[2]);
         $json = array(
             'license' => 'files',
             'files' => array()
@@ -25,28 +34,26 @@ if (file_exists($dir.'LICENSE')) {
         $i = 0;
         $pag = 0;
         foreach ($allFiles as $file) {
-            if (substr($file,0,1) !== '.') {
-                $extension = pathinfo($dir.$file, PATHINFO_EXTENSION);
+            if (substr($file, 0, 1) !== '.') {
+                $extension = pathinfo($dir . $file, PATHINFO_EXTENSION);
                 $extension = strtolower($extension);
                 if ($extension === 'txt' || $extension === 'jpg' || $extension === 'jpeg' || $extension === 'png') {
                     $json['files'][$pag][$i] = $file;
-                    if ($i%9 === 0 && $i > 0) {
+                    if ($i % 9 === 0 && $i > 0) {
                         $pag++;
-                        $i=0;
+                        $i = 0;
                     } else {
                         $i++;
                     }
                 }
             }
         }
+    } else {
+        $json = array(
+            'license' => '404'
+        );
     }
 
-} else {
-
-    $json = array(
-        'license' => '404'
-    );
-    $json = scandir($dir);
 }
 
 echo json_encode($json);
