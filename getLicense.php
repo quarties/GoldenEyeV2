@@ -25,7 +25,6 @@ if (file_exists($dir.'LICENSE')) {
 } else {
 
     $filesDir = scandir($dir);
-    print_r($filesDir);
     if ($filesDir[2]) {
         $allFiles = scandir($dir.$filesDir[2]);
         $json = array(
