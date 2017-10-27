@@ -18,7 +18,7 @@ $(document).ready(function() {
             'LV-CE-10-0492',
             'LV-CE-01-1502'
         ],
-        passwordAll: 'LV-CE-',
+        passwordAll: 'LV-CE-00-8791',
         author: "Kurtz Korinokabe Software Combinat",
         version: "v. 2-QRT-20-18-PROD",
         getCurrentFileName: function (){
