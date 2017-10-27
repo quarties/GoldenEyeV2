@@ -35,8 +35,7 @@ if (file_exists($dir.'LICENSE/')) {
         $pag = 0;
         foreach ($allFiles as $file) {
             if (substr($file, 0, 1) !== '.') {
-                $extension = pathinfo($dir . $file, PATHINFO_EXTENSION);
-                $extension = strtolower($extension);
+                $extension = pathinfo($dir.$filesDir[2] . $file, PATHINFO_EXTENSION);
                 if ($extension === 'txt' || $extension === 'jpg' || $extension === 'jpeg' || $extension === 'png') {
                     $json['files'][$pag][$i] = $file;
                     if ($i % 9 === 0 && $i > 0) {
