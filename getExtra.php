@@ -2,7 +2,7 @@
 
 header('Content-type: application/json');
 
-$dir = '/media/pi/EXTRA';
+$dir = '/media/pi/EXTRA/';
 
 if (file_exists($dir)) {
 
