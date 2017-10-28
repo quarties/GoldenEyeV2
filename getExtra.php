@@ -2,7 +2,7 @@
 
 header('Content-type: application/json');
 
-$dir = '/Users/michalsypko/Documents/usb/';
+$dir = '/media/pi/EXTRA';
 
 if (file_exists($dir)) {
 
